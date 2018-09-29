@@ -36,13 +36,11 @@ public class MugContest {
 		
 		// Hint 1: Use cmisClient.getSession().query(..) method
 		// Hint 2: Documents are identified with the property cmis:name in CMIS
-	//  OR (UPPER(cmis:name) LIKE UPPER('%cryptography%') OR (UPPER(cmis:name) LIKE UPPER('%neuralnetworks%') OR (UPPER(cmis:name) LIKE UPPER('%introduction%'))", false);	
 		ItemIterable<QueryResult> results = cmisClient.getSession().query("SELECT cmis:name FROM ksic:Thesis",false);
 
 		for(QueryResult hit: results) {  
 		    for(PropertyData<?> property: hit.getProperties()) {
 		    	String queryName = property.getFirstValue().toString();
-		        //String queryName = property.getFirstValue();
 		        char[] splitted = queryName.toCharArray();
 		        int i = splitted.length;
 		        if (splitted[i-1] == 'f' && splitted[i-2] == 'd' && splitted[i-3] == 'p') {
