@@ -61,3 +61,75 @@ There are different resources to be modified in order to produce a new ChatBot m
 * `data\stories.md`, including **intents** pathways for the dialog
 
 After modifying any of these resources, you'll need to rebuild the Docker Image.
+
+# Telegram integration
+
+You first need to retrieve some credentials, once you have them you can either attach the input channel running the provided rasa_core.run script, or you can attach it in your own code.
+
+## Getting Credentials
+
+How to get the Telegram credentials: You need to set up a Telegram bot.
+
+* To create the bot, go to: https://web.telegram.org/#/im?p=@BotFather, enter /newbot and follow the instructions.
+* At the end you should get your access_token and the username you set will be your verify.
+
+In this repository following parameters are pre-configured in `credentials.yml` file:
+
+```
+  access_token: "588830968:AAFqcre3RQmEEZ-pwU-9DLNiBlykAWGKBTM"
+  verify: "rasademo_bot"
+```
+
+## Exposing Docker Rasa Container to Internet 
+
+Telegram API must communicate with your Docker container by using a public IP, as it's an Internet service.
+
+You can use https://ngrok.com/ to create a local webhook from your machine that is Publicly available on the internet so you can use it with Telegram.
+
+The command to run a ngrok instance for port 5002 for example would be:
+
+```bash
+$ ngrok httpd 5002
+
+Session Status                online
+Account                       Angel Borroy (Plan: Free)
+Version                       2.2.8
+Region                        United States (us)
+Web Interface                 http://127.0.0.1:4040
+Forwarding                    http://5a9d299a.ngrok.io -> localhost:5002
+Forwarding                    https://5a9d299a.ngrok.io -> localhost:5002
+```
+
+>> Ngrok is only needed if you don’t have a public IP and are testing locally
+
+
+## Rebuilding the image
+
+Once `ngrok` has been started, public SSL address must be updated in `credentials.yml` file:
+
+```
+  webhook_url: "https://5a9d299a.ngrok.io/webhooks/telegram/webhook"
+```
+
+Next step is to build again the image, as we need to include credentials details.
+
+```
+$ docker build --tag keensoft/rasa_nlu .
+```
+
+## Running the ChatBot integrated with Telegram API
+
+And finally your ChatBot will be available for Telegram by running the container.
+
+```
+$ docker run -p 5000:5000 -p 5002:5002 keensoft/rasa_nlu
+```
+
+## Testing this project with your credentials
+
+* Create your own credentials and bot name at https://web.telegram.org/#/im?p=@BotFather
+* Update `credentials.yml` file with your `access_token` and `verify` (this is the bot name)
+* Start `ngrok` program and find Fordwaring to HTTPs URL
+* Update `credentials.yml` file with the URL at `webhook_url` including `/webhooks/telegram/webhook` context path
+* Rebuild your Docker image
+* Run your Docker container mapping port 5002 

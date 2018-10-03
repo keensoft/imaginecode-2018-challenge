@@ -14,5 +14,13 @@ ADD config.yml /app/config.yml
 RUN pip install rasa_core
 
 # Generate trained data for current model
-RUN python -m rasa_nlu.train -c config.yml -d data/nlu_data.md -o models/current/nlu_model
+RUN python -m rasa_nlu.train -c config.yml -d data/nlu_data.md -o models/current/nlu_model --fixed_model_name rasa_demo
 RUN python -m rasa_core.train -d domain.yml -s data/stories.md -o models/current/dialogue
+
+# Telegram credentials
+ADD credentials.yml /app/credentials.yml
+
+# Run ChatBot connected with Telegram!
+ENTRYPOINT python -m rasa_core.run -d models/current/dialogue -u models/current/nlu_model/default/rasa_demo --port 5002 -c telegram --credentials credentials.yml
+
+EXPOSE 5002
